@@ -1,0 +1,50 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+/// <summary>
+/// stretches a container rect transform to include all children.
+/// Also repositions children using the GridLayoutGroup, if found.
+/// </summary>
+public class UIPanelStretch : MonoBehaviour
+{
+    public int maxCellSizeX;
+    public int maxCellSizeY;
+
+	IEnumerator Start()
+    {
+        RectTransform rectTrans = GetComponent<RectTransform>();
+        GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
+
+        if (rectTrans != null && grid != null)
+        {
+			if (transform.childCount <= 0)
+                yield return new WaitForEndOfFrame();
+				
+            RectTransform child = transform.GetChild(0).GetComponent<RectTransform>();
+            
+            switch (grid.startAxis)
+            {
+                case GridLayoutGroup.Axis.Vertical:
+                    grid.cellSize = new Vector2(rectTrans.rect.width, child.rect.height);
+                    float newHeight = child.rect.height * transform.childCount;
+                    newHeight += (transform.childCount - 1) * grid.spacing.y + grid.padding.top + grid.padding.bottom;
+                    rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, newHeight);
+                    break;
+                case GridLayoutGroup.Axis.Horizontal:
+                    grid.cellSize = new Vector2(child.rect.width, rectTrans.rect.height);
+                    float newWidth = child.rect.width * transform.childCount;
+                    newWidth += (transform.childCount - 1) * grid.spacing.x + grid.padding.left + grid.padding.right;
+                    rectTrans.sizeDelta = new Vector2(newWidth, rectTrans.sizeDelta.y);
+                    break;
+            }
+
+            if(maxCellSizeX > 0 && grid.cellSize.x > maxCellSizeX)
+                grid.cellSize = new Vector2(maxCellSizeX, grid.cellSize.y);
+            if (maxCellSizeY > 0 && grid.cellSize.y > maxCellSizeY)
+                grid.cellSize = new Vector2(grid.cellSize.x, maxCellSizeY);
+
+            grid.enabled = true;
+        }
+    }
+}
